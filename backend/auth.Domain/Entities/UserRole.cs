@@ -1,4 +1,4 @@
-﻿namespace auth.Infrastructure.Entities
+﻿namespace auth.Domain.Entities
 {
     public class UserRole
     {
