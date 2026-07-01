@@ -1,6 +1,6 @@
 ﻿namespace auth.Domain.Entities
 {
-    public class UserRole
+    public class UserRole : BaseIdentityEntity
     {
         public int UserId { get; set; }
 

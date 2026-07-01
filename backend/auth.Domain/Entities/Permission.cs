@@ -1,6 +1,4 @@
-﻿using auth.Infrastructure.Entities;
-
-namespace auth.Domain.Entities
+﻿namespace auth.Domain.Entities
 {
     public class Permission : BaseIdentityEntity
     {

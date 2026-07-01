@@ -1,6 +1,6 @@
 ﻿namespace auth.Domain.Entities
 {
-    public class RolePermission
+    public class RolePermission : BaseIdentityEntity
     {
         public int RoleId { get; set; }
         public Role Role { get; set; } = default!;
