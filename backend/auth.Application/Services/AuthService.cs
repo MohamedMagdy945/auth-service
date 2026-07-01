@@ -3,6 +3,7 @@ using auth.Application.DTOs;
 using auth.Application.Interfaces;
 using auth.Domain.Entities;
 using Auth.Application.Bases;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace auth.Application.Services;
@@ -64,6 +65,33 @@ public class AuthService : IAuthService
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result<TokenPairResponse>.Success(tokenResponse);
+        return Result<TokenPairResponse>.Success(
+            tokenResponse,
+            message: "Login successful",
+            statusCode: StatusCodes.Status200OK);
+    }
+
+    public async Task<Result<bool>> LogoutAsync(
+        LogoutRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var refreshTokenHash = _tokenGenerator.HashToken(request.RefreshToken);
+
+        var existingToken = await _context.RefreshTokens
+            .FirstOrDefaultAsync(rt =>
+                rt.TokenHash == refreshTokenHash &&
+                rt.RevokedAt == null,
+                cancellationToken);
+
+        if (existingToken is null)
+            return Result<bool>.Unauthorized("Invalid refresh token.");
+
+        existingToken.RevokedAt = DateTime.UtcNow;
+        existingToken.RevokedReason = "Logged out";
+        existingToken.RevokedByIp = request.IpAddress;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result<bool>.Success(true, message: "Logged out successfully");
     }
 }

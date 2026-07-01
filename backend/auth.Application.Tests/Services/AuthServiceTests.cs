@@ -142,4 +142,68 @@ public class AuthServiceTests
         Assert.Equal("access-token", result.Data!.AccessToken);
         Assert.Single(context.RefreshTokens);
     }
+
+    [Fact]
+    public async Task LogoutAsync_returns_unauthorized_for_invalid_token()
+    {
+        var options = new DbContextOptionsBuilder<TestAuthDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new TestAuthDbContext(options);
+
+        var tokenGenerator = new Mock<ITokenGenerator>();
+        tokenGenerator.Setup(g => g.HashToken("invalid-token")).Returns("invalid-hash");
+
+        var service = new AuthService(
+            context,
+            Mock.Of<IPasswordHasher>(),
+            tokenGenerator.Object);
+
+        var result = await service.LogoutAsync(new LogoutRequest
+        {
+            RefreshToken = "invalid-token"
+        });
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(StatusCodes.Status401Unauthorized, result.StatusCode);
+    }
+
+    [Fact]
+    public async Task LogoutAsync_revokes_valid_refresh_token()
+    {
+        var options = new DbContextOptionsBuilder<TestAuthDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new TestAuthDbContext(options);
+        context.RefreshTokens.Add(new RefreshToken
+        {
+            UserId = 1,
+            TokenHash = "valid-hash",
+            ExpiresAt = DateTime.UtcNow.AddDays(7)
+        });
+        await context.SaveChangesAsync();
+
+        var tokenGenerator = new Mock<ITokenGenerator>();
+        tokenGenerator.Setup(g => g.HashToken("valid-token")).Returns("valid-hash");
+
+        var service = new AuthService(
+            context,
+            Mock.Of<IPasswordHasher>(),
+            tokenGenerator.Object);
+
+        var result = await service.LogoutAsync(new LogoutRequest
+        {
+            RefreshToken = "valid-token",
+            IpAddress = "127.0.0.1"
+        });
+
+        Assert.True(result.IsSuccess);
+
+        var token = await context.RefreshTokens.FirstAsync();
+        Assert.NotNull(token.RevokedAt);
+        Assert.Equal("Logged out", token.RevokedReason);
+        Assert.Equal("127.0.0.1", token.RevokedByIp);
+    }
 }

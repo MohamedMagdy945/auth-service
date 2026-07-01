@@ -26,6 +26,12 @@ public class Program
                 opt.Window = TimeSpan.FromMinutes(1);
                 opt.QueueLimit = 0;
             });
+            options.AddFixedWindowLimiter("logout", opt =>
+            {
+                opt.PermitLimit = 10;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueLimit = 0;
+            });
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
         });
 

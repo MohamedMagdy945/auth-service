@@ -2,7 +2,7 @@
 
 public static class CookieHelper
 {
-    private const string CookieName = "refreshToken";
+    public const string RefreshTokenCookieName = "refreshToken";
     private const string CookiePath = "/api/auth";
 
     public static void SetRefreshTokenCookie(
@@ -11,7 +11,7 @@ public static class CookieHelper
         DateTime expires,
         bool isSecure = true)
     {
-        response.Cookies.Append(CookieName, refreshToken, new CookieOptions
+        response.Cookies.Append(RefreshTokenCookieName, refreshToken, new CookieOptions
         {
             HttpOnly = true,
             Secure = isSecure,
@@ -23,7 +23,7 @@ public static class CookieHelper
 
     public static void DeleteRefreshTokenCookie(HttpResponse response, bool isSecure = true)
     {
-        response.Cookies.Delete(CookieName, new CookieOptions
+        response.Cookies.Delete(RefreshTokenCookieName, new CookieOptions
         {
             HttpOnly = true,
             Secure = isSecure,

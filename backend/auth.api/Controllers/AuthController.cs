@@ -1,6 +1,7 @@
 ﻿using auth.api.Helper;
 using auth.Application.Common;
 using auth.Application.Features.Auth.Login;
+using auth.Application.Features.Auth.Logout;
 using Auth.Application.Bases;
 using Mapster;
 using Microsoft.AspNetCore.Mvc;
@@ -31,5 +32,18 @@ public class AuthController : AppControllerBase
         var accessTokenResponse = result.Data.Adapt<AccessTokenResponse>();
 
         return ApiResponse(Result<AccessTokenResponse>.Success(accessTokenResponse));
+    }
+
+    [HttpPost("logout")]
+    [EnableRateLimiting("logout")]
+    [ProducesResponseType(typeof(Result<bool>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Logout()
+    {
+        var refreshToken = Request.Cookies[CookieHelper.RefreshTokenCookieName] ?? string.Empty;
+        var result = await MediatorService.Send(new LogoutCommand(refreshToken));
+
+        CookieHelper.DeleteRefreshTokenCookie(Response, HttpContext.Request.IsHttps);
+
+        return ApiResponse(result);
     }
 }
