@@ -1,6 +1,10 @@
-﻿using auth.Application.Interface;
+﻿using auth.Application.Interfaces;
+using auth.Infrastructure.Interfaces;
 using auth.Infrastructure.Persistence;
+using auth.Infrastructure.Persistence.Seeder;
+using auth.Infrastructure.Services;
 using auth.Infrastructure.settings;
+using Auth.Infrastructure.Persistence.Seeder;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -32,16 +36,16 @@ namespace auth.Infrastructure
 
             //services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
 
-            //services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 
             //services.AddScoped<IClientInfoProvider, ClientInfoProvider>();
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            //services.AddScoped<RoleSeeder>();
-            //services.AddScoped<PermissionSeeder>();
-            //services.AddScoped<UserSeeder>();
-            //services.AddScoped<DatabaseSeeder>();
+            services.AddScoped<RoleSeeder>();
+            services.AddScoped<PermissionSeeder>();
+            services.AddScoped<UserSeeder>();
+            services.AddScoped<DatabaseSeeder>();
 
 
             services.AddAuthentication(options =>

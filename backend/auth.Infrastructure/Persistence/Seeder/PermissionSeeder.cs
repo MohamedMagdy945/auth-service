@@ -1,12 +1,7 @@
-﻿using auth.Application.Interface;
+﻿using auth.Application.Interfaces;
 using auth.Domain.Constant;
 using auth.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace auth.Infrastructure.Persistence.Seeder
 {
@@ -82,3 +77,4 @@ namespace auth.Infrastructure.Persistence.Seeder
             await _context.SaveChangesAsync();
         }
     }
+}
