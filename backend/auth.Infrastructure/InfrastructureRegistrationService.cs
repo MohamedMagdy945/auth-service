@@ -29,7 +29,10 @@ public static class InfrastructureRegistrationService
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
 
             if (sp.GetRequiredService<IHostEnvironment>().IsDevelopment())
-                options.LogTo(Console.WriteLine, LogLevel.Information);
+            {
+                options.EnableSensitiveDataLogging();
+                options.EnableDetailedErrors();
+            }
         });
 
         services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));

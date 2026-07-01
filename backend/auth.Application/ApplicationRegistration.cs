@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using auth.Application.Interfaces;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -18,6 +19,8 @@ namespace auth.Application
 
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+            services.AddScoped<IAuthService, Services.AuthService>();
 
             return services;
         }

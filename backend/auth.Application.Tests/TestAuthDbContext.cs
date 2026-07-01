@@ -1,9 +1,8 @@
 using auth.Application.Interfaces;
 using auth.Domain.Entities;
-using auth.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
-namespace auth.Application.Tests.Features.Auth.Login;
+namespace auth.Application.Tests;
 
 internal sealed class TestAuthDbContext : DbContext, IAuthDbContext
 {

@@ -3,8 +3,8 @@ using auth.Application.Common;
 using auth.Application.Features.Auth.Login;
 using Auth.Application.Bases;
 using Mapster;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace auth.api.Controllers;
 
@@ -28,7 +28,8 @@ public class AuthController : AppControllerBase
             result.Data.RefreshTokenExpiration,
             HttpContext.Request.IsHttps);
 
-        return ApiResponse(Result<AccessTokenResponse>.Success(
-            result.Data.Adapt<AccessTokenResponse>()));
+        var accessTokenResponse = result.Data.Adapt<AccessTokenResponse>();
+
+        return ApiResponse(Result<AccessTokenResponse>.Success(accessTokenResponse));
     }
 }
