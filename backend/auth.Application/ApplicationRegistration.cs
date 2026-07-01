@@ -13,7 +13,7 @@ namespace auth.Application
             {
                 cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
 
-                //cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
+                cfg.AddOpenBehavior(typeof(Behaviors.ValidationBehavior<,>));
             });
 
 

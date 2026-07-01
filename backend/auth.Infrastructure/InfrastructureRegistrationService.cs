@@ -1,5 +1,4 @@
 ﻿using auth.Application.Interfaces;
-using auth.Infrastructure.Interfaces;
 using auth.Infrastructure.Persistence;
 using auth.Infrastructure.Persistence.Seeder;
 using auth.Infrastructure.Services;
@@ -10,134 +9,146 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
 
-namespace auth.Infrastructure
+namespace auth.Infrastructure;
+
+public static class InfrastructureRegistrationService
 {
-    public static class InfrastructureRegistrationService
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+        services.AddDbContext<IAuthDbContext, AuthDbContext>((sp, options) =>
         {
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
 
-            services.AddDbContext<IAuthDbContext, AuthDbContext>(options =>
-            {
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            if (sp.GetRequiredService<IHostEnvironment>().IsDevelopment())
                 options.LogTo(Console.WriteLine, LogLevel.Information);
-            });
+        });
 
-            services.Configure<JwtSettings>(
-                 configuration.GetSection("JwtSettings"));
+        services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
-            services.AddScoped<IAuthService, AuthService>();
+        services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<IClientInfoProvider, ClientInfoProvider>();
 
-            services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
-            services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<RoleSeeder>();
+        services.AddScoped<PermissionSeeder>();
+        services.AddScoped<UserSeeder>();
+        services.AddScoped<DatabaseSeeder>();
 
-            services.AddScoped<IClientInfoProvider, ClientInfoProvider>();
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = "Bearer";
+            options.DefaultChallengeScheme = "Bearer";
+        })
+        .AddJwtBearer("Bearer", options =>
+        {
+            var jwtSettings = configuration
+                .GetSection("JwtSettings")
+                .Get<JwtSettings>();
 
-            services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+            if (jwtSettings is null)
+                throw new InvalidOperationException("JWT settings are not configured properly.");
 
-            services.AddScoped<RoleSeeder>();
-            services.AddScoped<PermissionSeeder>();
-            services.AddScoped<UserSeeder>();
-            services.AddScoped<DatabaseSeeder>();
+            options.RequireHttpsMetadata = false;
+            options.SaveToken = true;
 
-
-            services.AddAuthentication(options =>
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                options.DefaultAuthenticateScheme = "Bearer";
-                options.DefaultChallengeScheme = "Bearer";
-            })
-           .AddJwtBearer("Bearer", options =>
-           {
+                ValidateIssuer = true,
+                ValidIssuer = jwtSettings.Issuer,
 
-               var jwtSettings = configuration
-               .GetSection("JwtSettings")
-               .Get<JwtSettings>();
+                ValidateAudience = true,
+                ValidAudience = jwtSettings.Audience,
 
-               if (jwtSettings == null)
-                   throw new InvalidOperationException("JWT settings are not configured properly.");
+                ValidateLifetime = true,
 
-               options.RequireHttpsMetadata = false;
-               options.SaveToken = true;
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwtSettings.AccessTokenSecret)),
 
-               options.TokenValidationParameters = new TokenValidationParameters
-               {
-                   ValidateIssuer = true,
-                   ValidIssuer = jwtSettings.Issuer,
+                ClockSkew = TimeSpan.Zero
+            };
 
-                   ValidateAudience = true,
-                   ValidAudience = jwtSettings.Audience,
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    var logger = context.HttpContext
+                        .RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JWT");
 
-                   ValidateLifetime = true,
+                    logger.LogWarning(
+                        "JWT Authentication failed: {Message} | Path: {Path}",
+                        context.Exception.Message,
+                        context.Request.Path);
 
-                   ValidateIssuerSigningKey = true,
-                   IssuerSigningKey = new SymmetricSecurityKey(
-                       Encoding.UTF8.GetBytes(jwtSettings.AccessTokenSecret)),
+                    return Task.CompletedTask;
+                },
 
-                   ClockSkew = TimeSpan.Zero
-               };
+                OnChallenge = context =>
+                {
+                    var logger = context.HttpContext
+                        .RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JWT");
 
-               options.Events = new JwtBearerEvents
-               {
-                   OnAuthenticationFailed = context =>
-                   {
-                       Console.WriteLine(context.Exception);
+                    logger.LogWarning(
+                        "Unauthorized request to {Path} | IP: {IP}",
+                        context.Request.Path,
+                        context.HttpContext.Connection.RemoteIpAddress);
 
-                       var logger = context.HttpContext
-                           .RequestServices
-                           .GetRequiredService<ILoggerFactory>()
-                           .CreateLogger("JWT");
+                    return Task.CompletedTask;
+                },
 
-                       logger.LogWarning(
-                           "JWT Authentication failed: {Message} | Path: {Path}",
-                           context.Exception.Message,
-                           context.Request.Path
-                       );
+                OnTokenValidated = async context =>
+                {
+                    var logger = context.HttpContext
+                        .RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("JWT");
 
-                       return Task.CompletedTask;
-                   },
+                    var userIdClaim = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    var permVersionClaim = context.Principal?.FindFirst("perm_version")?.Value;
 
-                   OnChallenge = context =>
-                   {
-                       var logger = context.HttpContext
-                           .RequestServices
-                           .GetRequiredService<ILoggerFactory>()
-                           .CreateLogger("JWT");
+                    if (!int.TryParse(userIdClaim, out var userId)
+                        || !int.TryParse(permVersionClaim, out var permVersion))
+                    {
+                        context.Fail("Invalid token claims.");
+                        return;
+                    }
 
-                       logger.LogWarning(
-                           "Unauthorized request to {Path} | IP: {IP}",
-                           context.Request.Path,
-                           context.HttpContext.Connection.RemoteIpAddress
-                       );
+                    var db = context.HttpContext.RequestServices.GetRequiredService<IAuthDbContext>();
+                    var currentVersion = await db.Users
+                        .AsNoTracking()
+                        .Where(u => u.Id == userId)
+                        .Select(u => u.PermissionsVersion)
+                        .FirstOrDefaultAsync(context.HttpContext.RequestAborted);
 
-                       return Task.CompletedTask;
-                   },
+                    if (currentVersion != permVersion)
+                    {
+                        logger.LogWarning(
+                            "Token permissions outdated for UserId: {UserId}", userId);
+                        context.Fail("Token permissions are outdated.");
+                        return;
+                    }
 
-                   OnTokenValidated = context =>
-                   {
-                       var logger = context.HttpContext
-                           .RequestServices
-                           .GetRequiredService<ILoggerFactory>()
-                           .CreateLogger("JWT");
+                    logger.LogInformation(
+                        "Token validated successfully for UserId: {UserId}", userId);
+                }
+            };
+        });
 
-                       var userId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-                       logger.LogInformation(
-                           "Token validated successfully for UserId: {UserId}",
-                           userId
-                       );
-
-                       return Task.CompletedTask;
-                   }
-               };
-           });
-            return services;
-        }
+        return services;
     }
 }

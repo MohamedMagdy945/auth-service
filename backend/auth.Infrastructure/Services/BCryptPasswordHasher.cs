@@ -1,18 +1,20 @@
-﻿using auth.Infrastructure.Interfaces;
+﻿using auth.Application.Interfaces;
 
-namespace auth.Infrastructure.Services
+namespace auth.Infrastructure.Services;
+
+public class BCryptPasswordHasher : IPasswordHasher
 {
-    public class BCryptPasswordHasher : IPasswordHasher
+    private const int WorkFactor = 12;
+
+    private static readonly string DummyHash =
+        BCrypt.Net.BCrypt.HashPassword("timing-attack-mitigation", WorkFactor);
+
+    public string Hash(string password)
+        => BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
+
+    public bool Verify(string password, string hashedPassword)
     {
-
-        private const int WorkFactor = 12;
-
-        public string Hash(string password)
-         => BCrypt.Net.BCrypt.HashPassword(password, WorkFactor);
-
-
-        public bool Verify(string password, string hashedPassword)
-            => BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-
+        var hash = string.IsNullOrEmpty(hashedPassword) ? DummyHash : hashedPassword;
+        return BCrypt.Net.BCrypt.Verify(password, hash);
     }
 }

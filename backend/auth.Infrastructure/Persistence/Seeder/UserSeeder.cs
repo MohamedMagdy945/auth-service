@@ -1,7 +1,6 @@
 ﻿using auth.Application.Interfaces;
 using auth.Domain.Constant;
 using auth.Domain.Entities;
-using auth.Infrastructure.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Auth.Infrastructure.Persistence.Seeder;
@@ -43,6 +42,7 @@ public class UserSeeder
             LastName = "Admin",
             FullName = "admin",
             Email = "admin@gmail.com",
+            IsEnabled = true,
             PasswordHash = _passwordHasher.Hash("Admin@123"),
         };
 
@@ -52,6 +52,7 @@ public class UserSeeder
             LastName = "User",
             FullName = "user",
             Email = "user@gmail.com",
+            IsEnabled = true,
             PasswordHash = _passwordHasher.Hash("User@123"),
         };
 

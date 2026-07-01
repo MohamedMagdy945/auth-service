@@ -1,58 +1,86 @@
 using auth.Application;
 using auth.Infrastructure;
 using auth.Infrastructure.Persistence;
+using Auth.Application.Bases;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 
-namespace auth.api
+namespace auth.api;
+
+public class Program
 {
-    public class Program
+    public static async Task Main(string[] args)
     {
-        public static async Task Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddControllers();
+        builder.Services.AddHttpContextAccessor();
+
+        builder.Services.AddRateLimiter(options =>
         {
-            var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
-
-            builder.Services.AddControllers();
-
-            builder.Services.AddHttpContextAccessor();
-
-            builder.Services.AddApplicationServices();
-            builder.Services.AddInfrastructureServices(builder.Configuration);
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-
-
-            using (var scope = app.Services.CreateScope())
+            options.AddFixedWindowLimiter("login", opt =>
             {
-                var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
+                opt.PermitLimit = 5;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueLimit = 0;
+            });
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        });
 
-                Console.WriteLine("Applying migrations...");
+        builder.Services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        });
 
-                db.Database.Migrate();
+        builder.Services.AddApplicationServices();
+        builder.Services.AddInfrastructureServices(builder.Configuration);
 
-                Console.WriteLine("Migration completed");
-            }
+        var app = builder.Build();
 
-
-            if (app.Environment.IsDevelopment())
+        app.UseExceptionHandler(errorApp =>
+        {
+            errorApp.Run(async context =>
             {
-                //app.UseSwaggerDocumentation();
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.ContentType = "application/json";
 
-            }
-            using (var scope = app.Services.CreateScope())
-            {
-                var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
-                await seeder.SeedAsync();
-            }
-            app.UseAuthorization();
+                await context.Response.WriteAsJsonAsync(
+                    Result<object>.Failure("An unexpected error occurred.", statusCode: 500));
+            });
+        });
 
+        app.UseForwardedHeaders();
 
-            app.MapControllers();
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
 
-            app.Run();
+            Console.WriteLine("Applying migrations...");
+
+            db.Database.Migrate();
+
+            Console.WriteLine("Migration completed");
         }
+
+        if (app.Environment.IsDevelopment())
+        {
+            //app.UseSwaggerDocumentation();
+        }
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+            await seeder.SeedAsync();
+        }
+
+        app.UseRateLimiter();
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapControllers();
+
+        app.Run();
     }
 }

@@ -12,6 +12,7 @@
         public string PasswordHash { get; set; } = string.Empty;
 
         public bool IsEnabled { get; set; } = false;
+        public int PermissionsVersion { get; set; }
         public User() { }
 
         public User(string email, string fullName, string passwordHash, string phoneNumber)
