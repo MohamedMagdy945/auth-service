@@ -1,0 +1,49 @@
+<nav class="navbar">
+  <div class="navbar-shell">
+    <a class="navbar-brand" routerLink="/">
+      <span class="brand-mark">A</span>
+      <span class="brand-text">{{ logoText }}</span>
+    </a>
+
+    <ul class="navbar-menu">
+      <li class="navbar-item">
+        <a class="navbar-link active-link" routerLink="/home">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-label">Home</span>
+        </a>
+      </li>
+
+      <li class="navbar-item">
+        <a class="navbar-link" routerLink="/auth">
+          <span class="nav-icon">🔐</span>
+          <span class="nav-label">Authentication</span>
+        </a>
+        <ul class="navbar-submenu">
+          <li class="navbar-subitem">
+            <a class="navbar-sublink" routerLink="/auth/login">Login</a>
+          </li>
+          <li class="navbar-subitem">
+            <a class="navbar-sublink" routerLink="/auth/register">Register</a>
+          </li>
+          <li class="navbar-subitem">
+            <a class="navbar-sublink" routerLink="/auth/forgot">Forgot Password</a>
+          </li>
+        </ul>
+      </li>
+
+      <li class="navbar-item">
+        <a class="navbar-link" routerLink="/dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </a>
+      </li>
+
+      <li class="navbar-item">
+        <a class="navbar-link" routerLink="/settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Settings</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
