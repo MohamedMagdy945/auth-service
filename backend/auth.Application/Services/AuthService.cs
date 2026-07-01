@@ -1,6 +1,7 @@
 using auth.Application.Common;
 using auth.Application.DTOs;
 using auth.Application.Interfaces;
+using auth.Domain.Constant;
 using auth.Domain.Entities;
 using Auth.Application.Bases;
 using Microsoft.AspNetCore.Http;
@@ -69,6 +70,65 @@ public class AuthService : IAuthService
             tokenResponse,
             message: "Login successful",
             statusCode: StatusCodes.Status200OK);
+    }
+
+    public async Task<Result<TokenPairResponse>> RegisterAsync(
+        RegisterRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var email = request.Email.Trim().ToLowerInvariant();
+
+        var existingUser = await _context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
+
+        if (existingUser is not null)
+            return Result<TokenPairResponse>.Failure(
+                "Email is already registered.",
+                statusCode: StatusCodes.Status409Conflict);
+
+        var passwordHash = _passwordHasher.Hash(request.Password);
+
+        var user = new User(email, request.FullName, passwordHash, request.PhoneNumber)
+        {
+            IsEnabled = true
+        };
+
+        var defaultRole = await _context.Roles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Name == Roles.User, cancellationToken);
+
+        if (defaultRole is null)
+        {
+            return Result<TokenPairResponse>.Failure("default role not found");
+        }
+
+        await _context.Users.AddAsync(user, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        var permissions = user.UserRoles
+            .SelectMany(ur => ur.Role.RolePermissions)
+            .Select(rp => rp.Permission.Name)
+            .Distinct()
+            .ToList();
+
+        var tokenResponse = _tokenGenerator.GenerateTokenPair(user, permissions);
+
+        await _context.RefreshTokens.AddAsync(new RefreshToken
+        {
+            UserId = user.Id,
+            TokenHash = _tokenGenerator.HashToken(tokenResponse.RefreshToken),
+            ExpiresAt = tokenResponse.RefreshTokenExpiration,
+            CreatedByIp = request.IpAddress,
+            DeviceInfo = request.DeviceInfo
+        }, cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result<TokenPairResponse>.Success(
+            tokenResponse,
+            message: "Registration successful",
+            statusCode: StatusCodes.Status201Created);
     }
 
     public async Task<Result<bool>> LogoutAsync(

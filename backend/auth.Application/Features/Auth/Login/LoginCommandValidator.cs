@@ -13,8 +13,12 @@ public class LoginCommandValidator : AbstractValidator<LoginCommand>
             .WithMessage("Email must be lowercase with no surrounding whitespace");
 
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Password is required")
-            .MinimumLength(8).WithMessage("Password must be at least 8 characters")
-            .MaximumLength(128).WithMessage("Password must not exceed 128 characters");
+           .NotEmpty()
+           .WithMessage("Password is required.")
+           .MinimumLength(8)
+           .MaximumLength(128)
+           .WithMessage("Password must be between 8 and 128 characters.")
+           .Matches(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>/?]).+$")
+           .WithMessage("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
     }
 }
