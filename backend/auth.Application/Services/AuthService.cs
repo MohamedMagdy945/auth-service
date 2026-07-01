@@ -154,4 +154,52 @@ public class AuthService : IAuthService
 
         return Result<bool>.Success(true, message: "Logged out successfully");
     }
+
+    public async Task<Result<TokenPairResponse>> RefreshTokenAsync(
+        string refreshToken,
+        CancellationToken cancellationToken = default)
+    {
+
+        var refreshTokenHash = _tokenGenerator.HashToken(refreshToken);
+
+        var existingToken = await _context.RefreshTokens
+            .Include(rt => rt.User)
+            .FirstOrDefaultAsync(rt =>
+                rt.TokenHash == refreshTokenHash &&
+                rt.RevokedAt == null &&
+                rt.ExpiresAt > DateTime.UtcNow,
+                cancellationToken);
+
+        if (existingToken is null)
+            return Result<TokenPairResponse>.Unauthorized("Invalid or expired refresh token.");
+
+        var user = existingToken.User;
+
+        var permissions = user.UserRoles
+            .SelectMany(ur => ur.Role.RolePermissions)
+            .Select(rp => rp.Permission.Name)
+            .Distinct()
+            .ToList();
+
+        var tokenResponse = _tokenGenerator.GenerateTokenPair(user, permissions);
+
+        existingToken.RevokedAt = DateTime.UtcNow;
+        existingToken.RevokedReason = "Replaced by new token";
+
+        await _context.RefreshTokens.AddAsync(new RefreshToken
+        {
+            UserId = user.Id,
+            TokenHash = _tokenGenerator.HashToken(tokenResponse.RefreshToken),
+            ExpiresAt = tokenResponse.RefreshTokenExpiration,
+            CreatedByIp = existingToken.CreatedByIp,
+            DeviceInfo = existingToken.DeviceInfo
+        }, cancellationToken);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result<TokenPairResponse>.Success(
+            tokenResponse,
+            message: "Token refreshed successfully",
+            statusCode: StatusCodes.Status200OK);
+    }
 }

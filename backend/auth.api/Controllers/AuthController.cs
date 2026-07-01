@@ -2,6 +2,7 @@
 using auth.Application.Common;
 using auth.Application.Features.Auth.Login;
 using auth.Application.Features.Auth.Logout;
+using auth.Application.Features.Auth.RefreshToken;
 using auth.Application.Features.Auth.Register;
 using Auth.Application.Bases;
 using Mapster;
@@ -66,5 +67,21 @@ public class AuthController : AppControllerBase
         CookieHelper.DeleteRefreshTokenCookie(Response, HttpContext.Request.IsHttps);
 
         return ApiResponse(result);
+    }
+
+    [HttpPost("refresh-token")]
+    [ProducesResponseType(typeof(Result<AccessTokenResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies[CookieHelper.RefreshTokenCookieName] ?? string.Empty;
+
+        var result = await MediatorService.Send(new RefreshTokenCommand(refreshToken));
+
+        if (!result.IsSuccess || result.Data is null)
+            return ApiResponse(result);
+
+        var accessTokenResponse = result.Data.Adapt<AccessTokenResponse>();
+
+        return ApiResponse(Result<AccessTokenResponse>.Success(accessTokenResponse));
     }
 }

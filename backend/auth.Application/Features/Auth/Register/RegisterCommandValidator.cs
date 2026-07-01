@@ -23,12 +23,14 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
         RuleFor(x => x.Password)
           .NotEmpty()
           .WithMessage("Password is required.")
-
           .MinimumLength(8)
           .MaximumLength(128)
-          .WithMessage("Password must be between 8 and 128 characters.")
+          .WithMessage("Password must be between 8 and 128 characters.");
 
-          .Matches(@"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':""\\|,.<>/?]).+$")
-          .WithMessage("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
+        RuleFor(x => x.ConfirmPassword)
+          .NotEmpty()
+          .WithMessage("Confirm password is required.")
+          .Equal(x => x.Password)
+          .WithMessage("Passwords do not match.");
     }
 }
