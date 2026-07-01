@@ -81,7 +81,7 @@ namespace auth.Infrastructure.Services
         //    return Result<TokenResponse>.Success(tokenResponse);
         //}
 
-        public async Task<Result<TokenResponse>> LoginAsync(LoginRequest request,
+        public async Task<Result<TokenPairResponse>> LoginAsync(LoginRequest request,
             CancellationToken cancellationToken)
         {
             var user = await _context.Users
@@ -91,7 +91,7 @@ namespace auth.Infrastructure.Services
 
 
             if (!isValidPassword)
-                return Result<TokenResponse>.Unauthorized("Invalid email or password.");
+                return Result<TokenPairResponse>.Unauthorized("Invalid email or password.");
 
 
             var userPermissions = await _context.UserRoles
@@ -101,7 +101,7 @@ namespace auth.Infrastructure.Services
              .Distinct()
              .ToListAsync(cancellationToken);
 
-            TokenResponse tokenResponse = _tokenGenerator.GenerateTokenPair(user, userPermissions);
+            TokenPairResponse tokenResponse = _tokenGenerator.GenerateTokenPair(user, userPermissions);
 
 
             await _context.RefreshTokens.AddAsync(new RefreshToken()
@@ -115,7 +115,7 @@ namespace auth.Infrastructure.Services
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return Result<TokenResponse>.Success(tokenResponse);
+            return Result<TokenPairResponse>.Success(tokenResponse);
         }
         //public async Task<Result<TokenResponse>> RefreshTokenAsync(RefreshTokenRequest request, CancellationToken cancellationToken)
         //{

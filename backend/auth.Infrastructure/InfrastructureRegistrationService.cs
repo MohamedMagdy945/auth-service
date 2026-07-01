@@ -32,13 +32,13 @@ namespace auth.Infrastructure
             services.Configure<JwtSettings>(
                  configuration.GetSection("JwtSettings"));
 
-            //services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAuthService, AuthService>();
 
-            //services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
+            services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
 
             services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
 
-            //services.AddScoped<IClientInfoProvider, ClientInfoProvider>();
+            services.AddScoped<IClientInfoProvider, ClientInfoProvider>();
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 

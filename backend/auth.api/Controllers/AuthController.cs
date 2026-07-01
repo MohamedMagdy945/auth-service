@@ -1,8 +1,8 @@
 ﻿using auth.api.Helper;
+using auth.Application.Common;
 using auth.Application.Features.Auth.Login;
 using Auth.Application.Bases;
 using Mapster;
-using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Mvc;
 
 namespace auth.api.Controllers
@@ -11,29 +11,23 @@ namespace auth.api.Controllers
     [ApiController]
     public class AuthController : AppControllerBase
     {
-        [HttpPost]
+        [HttpPost("login")]
         [ProducesResponseType(typeof(Result<AccessTokenResponse>), StatusCodes.Status200OK)]
-
         public async Task<IActionResult> Login(LoginCommand command)
         {
-            var response = await MediatorService.Send(command);
+            var result = await MediatorService.Send(command);
 
-            if (!response.IsSuccess || response.Data is null)
-                return ApiResponse(response);
+            if (!result.IsSuccess || result.Data is null)
+                return ApiResponse(result);
 
             CookieHelper.SetRefreshTokenCookie(
                 Response,
-                response.Data.RefreshToken,
-                response.Data.RefreshTokenExpiration,
-                HttpContext.Request.IsHttps
-            );
+                result.Data.RefreshToken,
+                result.Data.RefreshTokenExpiration,
+                HttpContext.Request.IsHttps);
 
-
-            var accessTokenResponse = response.Data.Adapt<AccessTokenResponse>();
-
-            var result = Result<AccessTokenResponse>.Success(accessTokenResponse);
-
-            return ApiResponse(result);
+            return ApiResponse(Result<AccessTokenResponse>.Success(
+                result.Data.Adapt<AccessTokenResponse>()));
         }
     }
 }

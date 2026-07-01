@@ -1,3 +1,4 @@
+using auth.Application;
 using auth.Infrastructure;
 using auth.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,9 @@ namespace auth.api
 
             builder.Services.AddControllers();
 
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
             var app = builder.Build();

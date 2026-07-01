@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace auth.Application.Features.Auth.Login
 {
     public class LoginCommandHandler :
-        IRequestHandler<LoginCommand, Result<TokenResponse>>
+        IRequestHandler<LoginCommand, Result<TokenPairResponse>>
     {
         private readonly IAuthService _authService;
         private readonly ILogger<LoginCommandHandler> _logger;
@@ -22,7 +22,7 @@ namespace auth.Application.Features.Auth.Login
             _clientInfoProvider = clientInfoProvider;
         }
 
-        public async Task<Result<TokenResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<Result<TokenPairResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var loginRequest = request.Adapt<LoginRequest>();
             loginRequest.IpAddress = _clientInfoProvider.GetIpAddress();

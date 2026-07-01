@@ -18,9 +18,9 @@ namespace auth.Infrastructure.Services
         {
             _jwtSettings = options.Value;
         }
-        public TokenResponse GenerateTokenPair(User user, IEnumerable<string>? permissions)
+        public TokenPairResponse GenerateTokenPair(User user, IEnumerable<string>? permissions)
         {
-            return new TokenResponse
+            return new TokenPairResponse
             {
                 UserId = user.Id,
                 Email = user.Email,
