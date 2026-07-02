@@ -11,7 +11,10 @@ EXPOSE 8080
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["auth.api.csproj", "."]
+COPY ["src/Auth.API/Auth.API.csproj", "src/Auth.API/"]
+COPY ["src/Auth.Application/Auth.Application.csproj", "src/Auth.Application/"]
+COPY ["src/Auth.Domain/Auth.Domain.csproj", "src/Auth.Domain/"]
+COPY ["src/Auth.Infrastructure/Auth.Infrastructure.csproj", "src/Auth.Infrastructure/"]
 RUN dotnet restore "./auth.api.csproj"
 COPY . .
 WORKDIR "/src/."

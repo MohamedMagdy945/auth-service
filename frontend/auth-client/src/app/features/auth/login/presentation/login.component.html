@@ -1,0 +1,99 @@
+<div class="flex min-h-screen items-center justify-center bg-[#0A0D12] px-4 font-sans text-[#8A92A3] antialiased relative overflow-hidden">
+  
+  <div class="absolute inset-0 bg-[linear-gradient(to_right,#171C24_1px,transparent_1px),linear-gradient(to_bottom,#171C24_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none"></div>
+
+  <div class="w-full max-w-[400px] relative z-10">
+
+    <div class="mb-8 flex flex-col items-center gap-3">
+      <div class="relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-[10px] border border-[#262D38] bg-gradient-to-br from-[#1E2530] to-[#12151C] after:absolute after:h-4.5 after:w-4.5 after:rotate-45 after:rounded-[4px] after:bg-[#FFB454] after:opacity-90"></div>
+      <span class="font-display text-lg font-semibold tracking-tight text-[#ECEAE3]">Aperture</span>
+    </div>
+
+    <div class="rounded-2xl border border-[#262D38] bg-[#171C24] p-7 shadow-xl">
+      <h1 class="font-display text-xl font-semibold text-[#ECEAE3]">Sign in</h1>
+      <p class="mt-1 text-sm text-[#5A6272]">Welcome back, enter your details to continue</p>
+
+      <form #authForm="ngForm" class="mt-6 flex flex-col gap-4" (ngSubmit)="onSubmit(authForm)">
+
+        <div class="flex flex-col gap-1.5">
+          <label for="email" class="text-[13px] font-medium text-[#ECEAE3]">Email</label>
+          <div class="flex items-center gap-2 rounded-[10px] border border-[#262D38] bg-[#0F1319] px-3.5 py-2.5 transition-colors focus-within:border-[#FFB454]">
+            <svg class="h-4 w-4 flex-shrink-0 text-[#5A6272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 6.5h18v11a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5v-11Z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="m3.5 7 8.06 6.05a1 1 0 0 0 1.2 0L20.5 7" />
+            </svg>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              [(ngModel)]="credentials.email"
+              required
+              email
+              autocomplete="email"
+              placeholder="you@example.com"
+              class="w-full bg-transparent text-sm text-[#ECEAE3] placeholder:text-[#5A6272] focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between">
+            <label for="password" class="text-[13px] font-medium text-[#ECEAE3]">Password</label>
+            <a routerLink="/auth/forgot" class="text-[12.5px] font-medium text-[#FFB454] hover:underline">Forgot password?</a>
+          </div>
+          <div class="flex items-center gap-2 rounded-[10px] border border-[#262D38] bg-[#0F1319] px-3.5 py-2.5 transition-colors focus-within:border-[#FFB454]">
+            <svg class="h-4 w-4 flex-shrink-0 text-[#5A6272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="4" y="10" width="16" height="10" rx="2" />
+              <path stroke-linecap="round" d="M8 10V7a4 4 0 1 1 8 0v3" />
+            </svg>
+            <input
+              id="password"
+              name="password"
+              [type]="isPasswordVisible ? 'text' : 'password'"
+              [(ngModel)]="credentials.password"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full bg-transparent text-sm text-[#ECEAE3] placeholder:text-[#5A6272] focus:outline-none"
+            />
+            <button type="button" (click)="togglePassword()" class="flex-shrink-0 text-[#5A6272] hover:text-[#ECEAE3]">
+              <svg *ngIf="!isPasswordVisible" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              <svg *ngIf="isPasswordVisible" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M10.6 10.6a3 3 0 0 0 4.2 4.2M6.6 6.7C4 8.4 1.5 12 1.5 12s3.5 7 10.5 7c2 0 3.6-.5 5-1.2M17.4 17.4C20 15.6 22.5 12 22.5 12s-1.3-2.6-3.7-4.6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <p *ngIf="errorMsg" class="rounded-[8px] bg-red-500/10 px-3 py-2 text-[13px] text-red-400 border border-red-500/20">
+          {{ errorMsg }}
+        </p>
+
+        <label class="flex items-center gap-2 text-[13px] text-[#8A92A3] cursor-pointer select-none">
+          <input type="checkbox" name="rememberMe" [(ngModel)]="credentials.rememberMe" class="h-4 w-4 rounded border-[#262D38] bg-[#0F1319] accent-[#FFB454]" />
+          Remember me
+        </label>
+
+        <button
+          type="submit"
+          [disabled]="isLoading || authForm.invalid"
+          class="mt-1 flex items-center justify-center gap-2 rounded-[10px] bg-[#FFB454] py-2.5 text-sm font-semibold text-[#0A0D12] transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <svg *ngIf="isLoading" class="h-4 w-4 animate-spin text-[#0A0D12]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" d="M12 3a9 9 0 1 0 9 9" />
+          </svg>
+          {{ isLoading ? 'Signing in...' : 'Sign in' }}
+        </button>
+      </form>
+
+      <p class="mt-6 text-center text-[13px] text-[#5A6272]">
+        Don’t have an account?
+        <a routerLink="/auth/register" class="font-medium text-[#FFB454] hover:underline">Sign up</a>
+      </p>
+    </div>
+
+  </div>
+</div>

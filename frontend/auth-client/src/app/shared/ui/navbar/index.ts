@@ -4,10 +4,8 @@
  */
 
 // Domain exports
-export * from './domain/navbar.model';
 
 // Infrastructure exports
-export { NavbarService } from './infrastructure/navbar.service';
 
 // Presentation exports
-export { NavbarComponent } from './presentation/navbar.component';
+export { NavComponent } from './presentation/navbar.component';

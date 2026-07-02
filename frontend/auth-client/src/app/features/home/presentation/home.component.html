@@ -1,54 +1,111 @@
-<section class="home-page">
-  <div class="hero-card">
-    <div class="hero-badge">✨ Modern Auth Experience</div>
-    <p class="eyebrow">Welcome</p>
-    <h1>Build secure experiences with confidence.</h1>
-    <p class="hero-text">
-      This Auth Service starter gives you a polished interface with a smooth navigation experience,
-      designed to help your product look premium from the very first page.
-    </p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" routerLink="/auth/login">🚀 Get Started</a>
-      <a class="btn btn-secondary" routerLink="/dashboard">📊 Open Dashboard</a>
-    </div>
-  </div>
-
-  <div class="feature-grid">
-    <article class="feature-card">
-      <div class="feature-icon">🔒</div>
-      <h3>Secure</h3>
-      <p>Protect every step of the journey with strong authentication, clear flows, and trusted user experience.</p>
-    </article>
-
-    <article class="feature-card">
-      <div class="feature-icon">⚡</div>
-      <h3>Fast</h3>
-      <p>Launch quickly with a sleek interface, lightweight components, and smooth interactions.</p>
-    </article>
-
-    <article class="feature-card">
-      <div class="feature-icon">🧩</div>
-      <h3>Flexible</h3>
-      <p>Extend the platform easily as your product grows with modular and scalable architecture.</p>
-    </article>
-
-    <article class="feature-card">
-      <div class="feature-icon">🎨</div>
-      <h3>Modern</h3>
-      <p>Enjoy a polished, premium UI crafted for clarity, confidence, and visual delight.</p>
-    </article>
-  </div>
-
-  <section class="footer-panel">
-    <div>
-      <h2>Ready to launch your next secure product?</h2>
-      <p>Start with a modern foundation and make every interaction feel thoughtful, reliable, and beautiful.</p>
-    </div>
-    <div class="footer-icons">
-      <span>🔐</span>
-      <span>⚙️</span>
-      <span>🌐</span>
-      <span>✨</span>
+<div class="min-h-screen bg-[#0A0D12] font-['IBM_Plex_Sans'] text-[#8A92A3] antialiased">
+  
+  <section class="relative overflow-hidden border-b border-[#262D38] bg-gradient-to-b from-[#0F1319]/50 to-transparent py-20 sm:py-32">
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#171C24_1px,transparent_1px),linear-gradient(to_bottom,#171C24_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40"></div>
+    
+    <div class="relative mx-auto max-w-[1280px] px-6 text-center">
+      <div class="inline-flex items-center gap-2 rounded-full border border-[#FFB454]/30 bg-[#4A3A22]/40 px-3 py-1 text-xs font-mono tracking-wider text-[#FFB454]">
+        <span class="flex h-1.5 w-1.5 rounded-full bg-[#FFB454] animate-pulse"></span>
+        IAM IDENTITY SERVICE CORE v1.0
+      </div>
+      
+      <h1 class="mx-auto mt-6 max-w-4xl font-['Space_Grotesk'] text-4xl font-bold tracking-tight text-[#ECEAE3] sm:text-6xl">
+        Centralized Auth & <span class="bg-gradient-to-r from-[#FFB454] to-[#ffcd85] bg-clip-text text-transparent">Token Lifecycle</span> Management.
+      </h1>
+      
+      <p class="mx-auto mt-6 max-w-2xl text-base text-[#5A6272] sm:text-lg">
+        A secure, high-performance authentication service layer. Issue robust Access Tokens, seamlessly rotate Refresh Tokens, and orchestrate granular user permissions.
+      </p>
+      
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <a routerLink="/dashboard" class="group flex items-center gap-2 rounded-xl bg-[#FFB454] px-5 py-3 text-sm font-semibold text-[#0A0D12] transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          Explore Control Panel
+          <span class="font-mono text-xs opacity-70 transition-transform group-hover:translate-x-0.5">→</span>
+        </a>
+        <a routerLink="/auth/register" class="rounded-xl border border-[#262D38] bg-[#171C24] px-5 py-3 text-sm font-medium text-[#ECEAE3] transition-colors duration-200 hover:border-[#3A4250] hover:bg-[#20262F]">
+          Test Authentication Flow
+        </a>
+      </div>
     </div>
   </section>
-</section>
+
+  <main class="mx-auto max-w-[1280px] px-6 py-20">
+    
+    <div class="mb-12">
+      <span class="font-mono text-xs uppercase tracking-[0.2em] text-[#5A6272]">Core Architecture</span>
+      <h2 class="font-['Space_Grotesk'] text-2xl font-bold tracking-tight text-[#ECEAE3] mt-1">Service Infrastructure Modules</h2>
+    </div>
+
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      
+      <div class="group rounded-xl border border-[#262D38] bg-[#171C24] p-6 transition-all duration-300 hover:border-[#3A4250] hover:bg-[#1E2530]">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-[#262D38] bg-[#0F1319] text-lg text-[#FFB454] group-hover:border-[#FFB454]/30">
+          🔄
+        </div>
+        <h3 class="font-['Space_Grotesk'] text-lg font-semibold text-[#ECEAE3] mt-4">Token Sliding Rotation</h3>
+        <p class="text-xs text-[#5A6272] mt-2 leading-relaxed">
+          Secure issuance of short-lived <span class="text-[#ECEAE3] font-medium">Access Tokens</span> backed by a zero-trust <span class="text-[#FFB454] font-medium">Refresh Token Rotation (RTR)</span> mechanism to eliminate session hijacking.
+        </p>
+      </div>
+
+      <div class="group rounded-xl border border-[#262D38] bg-[#171C24] p-6 transition-all duration-300 hover:border-[#3A4250] hover:bg-[#1E2530]">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-[#262D38] bg-[#0F1319] text-lg text-[#FFB454] group-hover:border-[#FFB454]/30">
+          🛡️
+        </div>
+        <h3 class="font-['Space_Grotesk'] text-lg font-semibold text-[#ECEAE3] mt-4">Granular Access Control</h3>
+        <p class="text-xs text-[#5A6272] mt-2 leading-relaxed">
+          Hierarchical Role-Based Access Control (<span class="text-[#ECEAE3] font-medium">RBAC</span>). Define precise user permissions and claim mappings directly bound to the token payload.
+        </p>
+      </div>
+
+      <div class="group rounded-xl border border-[#262D38] bg-[#171C24] p-6 transition-all duration-300 hover:border-[#3A4250] hover:bg-[#1E2530]">
+        <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-[#262D38] bg-[#0F1319] text-lg text-[#FFB454] group-hover:border-[#FFB454]/30">
+          👥
+        </div>
+        <h3 class="font-['Space_Grotesk'] text-lg font-semibold text-[#ECEAE3] mt-4">Identity Provisioning</h3>
+        <p class="text-xs text-[#5A6272] mt-2 leading-relaxed">
+          Comprehensive user account lifecycle management. From cryptographically hashed password onboarding to remote security session revocation.
+        </p>
+      </div>
+
+    </div>
+
+    <section class="mt-16 rounded-2xl border border-[#262D38] bg-[#0F1319]/40 p-8 backdrop-blur-md">
+      <div class="grid gap-8 lg:grid-cols-12 lg:items-center">
+        <div class="lg:col-span-5">
+          <div class="inline-flex h-6 items-center rounded-full bg-[#171C24] border border-[#262D38] px-2.5 font-mono text-[10px] text-[#5FD97A]">
+            ● SECURITY LAYER ENGAGED
+          </div>
+          <h3 class="font-['Space_Grotesk'] text-2xl font-bold text-[#ECEAE3] mt-4">Cryptographic Token Structure</h3>
+          <p class="text-xs text-[#5A6272] mt-3 leading-relaxed">
+            The service architecture structures payloads into secure, base64-encoded web tokens. Permissions, tracking frames, and session variables are deeply nested to guarantee fast API verification.
+          </p>
+        </div>
+        
+        <div class="rounded-xl border border-[#262D38] bg-[#171C24] p-5 font-mono text-xs leading-relaxed text-[#5A6272] lg:col-span-7">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-[#262D38]">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-[#3A4250]"></span>
+              <span class="font-sans text-[11px] text-[#5A6272]">decrypted_jwt_payload.json</span>
+            </div>
+            <span class="text-[10px] text-[#FFB454] font-semibold bg-[#4A3A22]/50 px-1.5 py-0.5 rounded border border-[#FFB454]/20">HS256 Verified</span>
+          </div>
+          <p>&#123;</p>
+          <p class="pl-4">"sub": <span class="text-[#5FD97A]">"usr_mira_99x"</span>,</p>
+          <p class="pl-4">"exp": <span class="text-[#FFB454]">1782974400</span>, <span class="text-[#5A6272]">// 2026 Telemetry Expiry</span></p>
+          <p class="pl-4">"refresh_rotation": <span class="text-[#FFB454]">true</span>,</p>
+          <p class="pl-4">"roles": [<span class="text-[#5FD97A]">"Administrator"</span>, <span class="text-[#5FD97A]">"Security_Officer"</span>],</p>
+          <p class="pl-4">"permissions": [</p>
+          <p class="pl-8"><span class="text-[#5FD97A]">"users:write"</span>, <span class="text-[#5FD97A]">"tokens:revoke"</span>, <span class="text-[#5FD97A]">"scopes:bind"</span></p>
+          <p class="pl-4">]</p>
+          <p>&#125;;</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-[#262D38] bg-[#0F1319]/30 py-6 text-center font-mono text-[11px] text-[#5A6272]">
+    &copy; 2026 Aperture Identity Core. Graduation Project Framework. All rights reserved.
+  </footer>
+</div>
