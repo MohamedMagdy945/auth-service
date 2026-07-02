@@ -200,6 +200,7 @@ public class AuthService : IAuthService
         return Result<TokenPairResponse>.Success(
             tokenResponse,
             message: "Token refreshed successfully",
-            statusCode: StatusCodes.Status200OK);
+            statusCode: StatusCodes.Status200OK
+        );
     }
 }

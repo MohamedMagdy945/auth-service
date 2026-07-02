@@ -1,6 +1,7 @@
-import { Component, ElementRef, ViewChild, AfterViewInit, HostListener, Renderer2 } from '@angular/core';
+import { Component, ElementRef, ViewChild, AfterViewInit, HostListener, Renderer2, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { AuthService } from '../../../../core/Models/services/auth-services.service';
 
 @Component({
   selector: 'app-nav',
@@ -8,8 +9,10 @@ import { RouterModule } from '@angular/router';
   imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html'
 })
-export class NavComponent implements AfterViewInit {
+export class NavComponent implements AfterViewInit, OnInit {
+  private authService = inject(AuthService);
   logoText = 'Aperture';
+
   userName = 'Mira K.';
   isAuthOpen = false;
   isMobileMenuOpen = false;
@@ -19,15 +22,23 @@ export class NavComponent implements AfterViewInit {
 
   constructor(private renderer: Renderer2) {}
 
+  ngOnInit(): void {
+    this.authService.currentUser$.subscribe(user => {
+      if (user) {
+        this.userName = user.email;
+      } else {
+        this.userName = 'Guest';
+      }
+    });
+  }
+
   ngAfterViewInit() {
-    // تشغيل الأنيميشن المبدئي على العنصر النشط بعد تحميل الـ View
     setTimeout(() => {
       const activeEl = this.primaryNav.nativeElement.querySelector('.nav-item.active');
       if (activeEl) this.movePill(activeEl);
     }, 50);
   }
 
-  // حساب أبعاد وحركة الـ Pill الخلفي
   movePill(element: HTMLElement) {
     const pill = this.slidingPill.nativeElement;
     const parent = this.primaryNav.nativeElement;
@@ -54,7 +65,6 @@ export class NavComponent implements AfterViewInit {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
-  // إغلاق الدروبر داون لو ضغط المستخدم في أي مكان خارجي
   @HostListener('document:click', ['$event'])
   closeDropdowns(event: Event) {
     this.isAuthOpen = false;

@@ -5,6 +5,7 @@ import { User } from '../auth/user';
 import { AuthSuccessResponse } from '../auth/auth-success-response';
 import { ApiResponse } from '../api-response.model';
 import { LoginRequest } from '../auth/login-request';
+import { RegisterRequest } from '../auth/register-request';
 
 @Injectable({
     providedIn: 'root'
@@ -19,12 +20,9 @@ export class AuthService {
 
     private currentUserSubject = new BehaviorSubject<User | null>(null);
 
-    // public currentUser$ = this.currentUserSubject.asObservable();
+    public currentUser$ = this.currentUserSubject.asObservable();
 
-    // constructor() {
-    //     // أول ما الخدمة تشتغل، بنشوف هل فيه توكن قديم متسجل ولا لأ
-    //     this.loadCurrentUser();
-    // }
+   
 
     login(credentials: LoginRequest): Observable<ApiResponse<AuthSuccessResponse>> {
         return this.http.post<ApiResponse<AuthSuccessResponse>>(
@@ -40,7 +38,26 @@ export class AuthService {
                 }
 
                 this.setAccessToken(response.data.accessToken);
-                this.setCurrentUser(response.data.userId, response.data.email);
+                this.setCurrentUser(response.data.userId, response.data.email, response.data.ImageUrl);
+            })
+        );
+    }
+
+    register(credentials: RegisterRequest): Observable<ApiResponse<AuthSuccessResponse>> {
+        return this.http.post<ApiResponse<AuthSuccessResponse>>(
+            `${this.API_URL}/register`,
+            credentials,
+            {
+                withCredentials: true
+            }
+        ).pipe(
+            tap(response => {
+                if (!response.isSuccess || !response.data) {
+                    return;
+                }
+
+                this.setAccessToken(response.data.accessToken);
+                this.setCurrentUser(response.data.userId, response.data.email, response.data.ImageUrl);
             })
         );
     }
@@ -53,6 +70,7 @@ export class AuthService {
         ).pipe(
             tap(response => {
                 this.setAccessToken(response.data.accessToken);
+                this.setCurrentUser(response.data.userId, response.data.email, response.data.ImageUrl);
             })
         );
     }
@@ -73,10 +91,11 @@ export class AuthService {
         localStorage.setItem(this.TOKEN_KEY, token);
     }
 
-    private setCurrentUser(userId: number, email: string): void {
+    private setCurrentUser(userId: number, email: string, ImageUrl: string | undefined): void {
         this.currentUserSubject.next({
             userId: userId,
-            email: email
+            email: email,
+            ImageUrl: ImageUrl
         });
     }
 
