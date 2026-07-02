@@ -5,7 +5,6 @@ using Auth.Application.Bases;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.RateLimiting;
 
 namespace auth.api;
 
@@ -17,6 +16,18 @@ public class Program
 
         builder.Services.AddControllers();
         builder.Services.AddHttpContextAccessor();
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("Angular", policy =>
+            {
+                policy
+                    .WithOrigins("http://localhost:4200")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+        });
 
         builder.Services.AddRateLimiter(options =>
         {
@@ -81,7 +92,11 @@ public class Program
             await seeder.SeedAsync();
         }
 
+        app.UseCors("Angular");
+
         app.UseRateLimiter();
+
+
         app.UseAuthentication();
         app.UseAuthorization();
 
