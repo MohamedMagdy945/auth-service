@@ -3,5 +3,5 @@
   <Project Path="../auth.Application/auth.Application.csproj" />
   <Project Path="../auth.Domain/auth.Domain.csproj" />
   <Project Path="../auth.Infrastructure/auth.Infrastructure.csproj" />
-  <Project Path="auth.api.csproj" />
+  <Project Path="auth.api.csproj" DisplayName="auth.Api" />
 </Solution>

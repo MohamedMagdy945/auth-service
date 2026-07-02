@@ -10,11 +10,11 @@ EXPOSE 8080
 # This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-COPY ["src/Auth.API/Auth.API.csproj", "src/Auth.API/"]
-COPY ["src/Auth.Application/Auth.Application.csproj", "src/Auth.Application/"]
-COPY ["src/Auth.Domain/Auth.Domain.csproj", "src/Auth.Domain/"]
-COPY ["src/Auth.Infrastructure/Auth.Infrastructure.csproj", "src/Auth.Infrastructure/"]
+WORKDIR /src ..
+COPY ["auth-service/backend/auth.API/auth.API.csproj", "src/auth.API/"]
+COPY ["auth-service/backend/auth.Application/auth.Application.csproj", "src/auth.Application/"]
+COPY ["auth-service/backend/auth.Domain/auth.Domain.csproj", "src/auth.Domain/"]
+COPY ["auth-service/backend/auth.Infrastructure/auth.Infrastructure.csproj", "src/auth.Infrastructure/"]
 RUN dotnet restore "./auth.api.csproj"
 COPY . .
 WORKDIR "/src/."
