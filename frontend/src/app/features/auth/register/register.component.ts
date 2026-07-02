@@ -1,18 +1,21 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, Validators, ReactiveFormsModule, NgForm } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/Models/services/auth-services.service';
 import { RegisterRequest } from '../../../core/Models/auth/register-request';
 
 @Component({
-  selector: 'app-login',
+  selector: 'app-register', // تعديل الـ selector ليكون معبراً عن الـ Register
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule], // شيلنا الـ ReactiveFormsModule لعدم الحاجة إليه
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   credentials: RegisterRequest = {
     fullName: '',
     email: '',
@@ -20,32 +23,25 @@ export class RegisterComponent {
     password: '',
     confirmPassword: ''
   }; 
+
   isPasswordVisible = false;
-  showPassword = signal(false);
   isLoading = false;
-  errorMsg = '';
+  errorMessages: string[] = [];
 
   togglePassword(): void {
     this.isPasswordVisible = !this.isPasswordVisible;
   }
 
-
-  loginForm: FormGroup;
-  private authService = inject(AuthService);
-
-  constructor(private fb: FormBuilder, private router: Router) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false]
-    });
-  }
-
   onSubmit(form: NgForm) {
     if (form.invalid) return;
 
-    this.isLoading = false;
-    this.errorMsg = '';
+    if (this.credentials.password !== this.credentials.confirmPassword) {
+      this.errorMessages = ['Passwords do not match.'];
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessages = [];
 
     console.log('Attempting register with payload:', this.credentials);
 
@@ -55,17 +51,17 @@ export class RegisterComponent {
 
         if (response.isSuccess) {
           console.log('Register successful:', response.message);
-
-          this.router.navigate(['/home']);
+          this.router.navigate(['/auth/login']); // يفضل توجيهه للـ login أو الـ home مباشرة حسب الـ flow عندك
         } else {
-          this.errorMsg = response.message || 'Register failed. Please check your credentials.';
+          this.errorMessages.push(response.message || 'Register failed. Please check your inputs.');
         }
       },
       error: (err) => {
         this.isLoading = false;
         console.error('Register request error:', err);
 
-        this.errorMsg = err.error?.message || 'The email or password you entered is incorrect. Please try again.';
+        const apiError = err.error?.message || 'An unexpected error occurred. Please try again.';
+        this.errorMessages.push(apiError);
       }
     });
   }
