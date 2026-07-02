@@ -55,6 +55,28 @@ public class AuthController : AppControllerBase
 
         return ApiResponse(Result<AccessTokenResponse>.Success(accessTokenResponse));
     }
+    [HttpPost("refresh-token")]
+    [ProducesResponseType(typeof(Result<AccessTokenResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> RefreshToken()
+    {
+        var refreshToken = Request.Cookies[CookieHelper.RefreshTokenCookieName] ?? string.Empty;
+
+        var result = await MediatorService.Send(new RefreshTokenCommand(refreshToken));
+
+        if (!result.IsSuccess || result.Data is null)
+            return ApiResponse(result);
+
+        CookieHelper.SetRefreshTokenCookie(
+            Response,
+            result.Data.RefreshToken,
+            result.Data.RefreshTokenExpiration,
+            HttpContext.Request.IsHttps
+        );
+
+        var accessTokenResponse = result.Data.Adapt<AccessTokenResponse>();
+
+        return ApiResponse(Result<AccessTokenResponse>.Success(accessTokenResponse));
+    }
 
     [HttpPost("logout")]
     [EnableRateLimiting("logout")]
@@ -69,19 +91,5 @@ public class AuthController : AppControllerBase
         return ApiResponse(result);
     }
 
-    [HttpPost("refresh-token")]
-    [ProducesResponseType(typeof(Result<AccessTokenResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> RefreshToken()
-    {
-        var refreshToken = Request.Cookies[CookieHelper.RefreshTokenCookieName] ?? string.Empty;
 
-        var result = await MediatorService.Send(new RefreshTokenCommand(refreshToken));
-
-        if (!result.IsSuccess || result.Data is null)
-            return ApiResponse(result);
-
-        var accessTokenResponse = result.Data.Adapt<AccessTokenResponse>();
-
-        return ApiResponse(Result<AccessTokenResponse>.Success(accessTokenResponse));
-    }
 }

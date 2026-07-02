@@ -27,17 +27,22 @@ export class AuthService {
     // }
 
     login(credentials: LoginRequest): Observable<ApiResponse<AuthSuccessResponse>> {
-        return this.http
-            .post<ApiResponse<AuthSuccessResponse>>(`${this.API_URL}/login`, credentials)
-            .pipe(
-                tap(response => {
-                    if (!response.isSuccess || !response.data) {
-                        return;
-                    } 
-                    this.setAccessToken(response.data.accessToken);
-                    this.setCurrentUser(response.data.userId, response.data.email);
-                })
-            );
+        return this.http.post<ApiResponse<AuthSuccessResponse>>(
+            `${this.API_URL}/login`,
+            credentials,
+            {
+                withCredentials: true
+            }
+        ).pipe(
+            tap(response => {
+                if (!response.isSuccess || !response.data) {
+                    return;
+                }
+
+                this.setAccessToken(response.data.accessToken);
+                this.setCurrentUser(response.data.userId, response.data.email);
+            })
+        );
     }
 
     refreshToken(): Observable<ApiResponse<AuthSuccessResponse>> {
@@ -70,7 +75,7 @@ export class AuthService {
 
     private setCurrentUser(userId: number, email: string): void {
         this.currentUserSubject.next({
-            userId:userId,
+            userId: userId,
             email: email
         });
     }
