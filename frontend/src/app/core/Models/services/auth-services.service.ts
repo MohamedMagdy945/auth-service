@@ -1,63 +1,91 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { LoginResponse, UserData } from './auth.model';
+import { User } from '../auth/user';
+import { AuthSuccessResponse } from '../auth/auth-success-response';
+import { ApiResponse } from '../api-response.model';
+import { LoginRequest } from '../auth/login-request';
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class AuthService {
-  // استخدام inject() المتوافق مع نسخ Angular الحديثة
-  private http = inject(HttpClient); 
-  private readonly TOKEN_KEY = 'access_token';
-  private readonly API_URL = 'https://api.yourdomain.com/auth'; // غير الرابط حسب الـ API عندك
 
-  // BehaviorSubject لحفظ بيانات المستخدم الحالية وتحديث الـ Components فوراً
-  private currentUserSubject = new BehaviorSubject<UserData | null>(null);
-  // Observable مكشوف للـ Components عشان تعمل subscribe عليه
-  public currentUser$ = this.currentUserSubject.asObservable();
+    private http = inject(HttpClient);
 
-  constructor() {
-    // أول ما الخدمة تشتغل، بنشوف هل فيه توكن قديم متسجل ولا لأ
-    this.loadCurrentUser();
-  }
+    private readonly TOKEN_KEY = 'access_token';
 
-  // الـ Login Method الاحترافية
-  login(credentials: { email: string; password: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_URL}/login`, credentials).pipe(
-      tap(response => {
-        if (response.isSuccess && response.data?.accessToken) {
-          localStorage.setItem(this.TOKEN_KEY, response.data.accessToken);
-          this.currentUserSubject.next(response.data);
-        }
-      })
-    );
-  }
+    private readonly API_URL = 'http://localhost:5158/api/auth';
 
-  logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    this.currentUserSubject.next(null);
-  }
+    private currentUserSubject = new BehaviorSubject<User | null>(null);
 
-  isLoggedIn(): boolean {
-    return !!this.currentUserSubject.value;
-  }
+    // public currentUser$ = this.currentUserSubject.asObservable();
 
-  getAccessToken(): string | null {
-    return localStorage.getItem(this.TOKEN_KEY);
-  }
+    // constructor() {
+    //     // أول ما الخدمة تشتغل، بنشوف هل فيه توكن قديم متسجل ولا لأ
+    //     this.loadCurrentUser();
+    // }
 
-  private loadCurrentUser(): void {
-    const token = this.getAccessToken();
-    if (token) {
-      // هنا تقدر تحلل الـ JWT Token عشان تجيب الـ userId والـ email لو مش متخزنين
-      // أو تكتفي بوضع التوكن في الـ state، كالأتي كـ شكل مبدئي:
-      this.currentUserSubject.next({
-        accessToken: token,
-        userId: 0, // هتحتاج تفك الـ JWT لو عايز البيانات دي تفضل موجودة بعد الـ Refresh
-        email: '',
-        accessTokenExpiration: ''
-      });
+    login(credentials: LoginRequest): Observable<ApiResponse<AuthSuccessResponse>> {
+        return this.http
+            .post<ApiResponse<AuthSuccessResponse>>(`${this.API_URL}/login`, credentials)
+            .pipe(
+                tap(response => {
+                    if (!response.isSuccess || !response.data) {
+                        return;
+                    } 
+                    this.setAccessToken(response.data.accessToken);
+                    this.setCurrentUser(response.data.userId, response.data.email);
+                })
+            );
     }
-  }
+
+    refreshToken(): Observable<ApiResponse<AuthSuccessResponse>> {
+        return this.http.post<ApiResponse<AuthSuccessResponse>>(
+            `${this.API_URL}/refresh-token`,
+            {},
+            { withCredentials: true }
+        ).pipe(
+            tap(response => {
+                this.setAccessToken(response.data.accessToken);
+            })
+        );
+    }
+
+    logout(): void {
+        localStorage.removeItem(this.TOKEN_KEY);
+        this.currentUserSubject.next(null);
+    }
+
+    isLoggedIn(): boolean {
+        return !!this.currentUserSubject.value;
+    }
+
+    getAccessToken(): string | null {
+        return localStorage.getItem(this.TOKEN_KEY);
+    }
+    private setAccessToken(token: string): void {
+        localStorage.setItem(this.TOKEN_KEY, token);
+    }
+
+    private setCurrentUser(userId: number, email: string): void {
+        this.currentUserSubject.next({
+            userId:userId,
+            email: email
+        });
+    }
+
+    //   private loadCurrentUser(): void {
+    //     const token = this.getAccessToken();
+    //     if (token) {
+    //       // هنا تقدر تحلل الـ JWT Token عشان تجيب الـ userId والـ email لو مش متخزنين
+    //       // أو تكتفي بوضع التوكن في الـ state، كالأتي كـ شكل مبدئي:
+    //       this.currentUserSubject.next({
+    //         accessToken: token,
+    //         userId: 0, // هتحتاج تفك الـ JWT لو عايز البيانات دي تفضل موجودة بعد الـ Refresh
+    //         email: '',
+    //         accessTokenExpiration: ''
+    //       });
+    //     }
+    //   }
 }
